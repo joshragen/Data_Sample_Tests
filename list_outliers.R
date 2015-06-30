@@ -8,7 +8,7 @@ list_outliers <- function(file, test, z = 3){
       #and puts them into a logical vector
       
       outliers <- data.frame(row = which(out == TRUE),
-                             value = dat[[test]][which(out == TRUE)])
+            value = dat[[test]][which(out == TRUE)])
       #this goes through that logical vector and puts the row number
       #and values of the outliers into a dataframe
       

@@ -44,8 +44,7 @@ list_outliers <- function(file, z = 3){
             #are in, then the mean and and data
       }
       
-      
-      write.table(outliers, "outliers.csv", sep = ",", col.names = NA)
+      write.csv(outliers, "outliers.csv")
       #this function prints out the table when it's done
       #to a csv file
 }

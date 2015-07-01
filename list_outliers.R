@@ -34,14 +34,19 @@ list_outliers <- function(file, z = 3){
             
             
             namerow <- c("Name of Test", colnames(dat[test]))
-            colmean<- c("Mean of Column", mean(dat[[test]], na.rm = TRUE))
+            colmean <- c("Mean of Column", mean(dat[[test]], na.rm = TRUE))
             #This both prints the name of the outlier, and the mean of the columns
             #so that they are displayed above the list of outliers
             
-            outliers <- rbind(outliers, namerow, colmean, outlier_col)
+            colint <- c("Confidence Interval", 
+                  paste(c(mean(dat[[test]], na.rm = TRUE) + z*sd(dat[[test]], na.rm = TRUE)),
+                  c(mean(dat[[test]], na.rm = TRUE) - z*sd(dat[[test]], na.rm = TRUE)), sep = ", "))
+            #This prints the bounds of the confidence interval which the means are outside of
+            
+            outliers <- rbind(outliers, namerow, colmean, colint, outlier_col)
             #combines outliers data frame for every loop though this function
             #adding previous array first, then names of the tests they
-            #are in, then the mean and and data
+            #are in, then the mean, the confidence interval and last, the data
       }
       
       write.csv(outliers, "outliers.csv")

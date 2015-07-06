@@ -1,5 +1,5 @@
 
-#source("check_zip.R")
+#source("check_zip2.R")
 #check_postal_codes("CSZ.csv")
 check_postal_codes <- function(file, registry = "postal_codes.csv"){
       
@@ -26,7 +26,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       
       dzip_fix<-sapply(dzip, fix_zip, USE.NAMES = FALSE)
       datf<-replace(dat,3,dzip_fix)
-      message("Postal Codes Fixed")
+      message("Postal Codes Fixed (1 of 4)")
       
       ziprow <- function(z){
             if(is.na(z)){
@@ -38,7 +38,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       
       zip_list <- lapply(dzip_fix,ziprow)
 
-      message("Zip Code Registry List Created")
+      message("Zip Code Registry List Created (2 of 4)")
       
       check_zip <- function(n){
             if(all(datf[n,] == zip_list[[n]]) == TRUE){
@@ -50,7 +50,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       }
       
       cordat_mat<-sapply(1:nrow(dat), check_zip)
-      message("Ordered According to Zip Code")
+      message("Ordered According to Zip Code (3 of 4)")
       cordat_list<-data.frame(t(as.data.frame(cordat_mat)))
       
       cordat<-data.frame(lapply(cordat_list,as.character), stringsAsFactors = FALSE)
@@ -66,8 +66,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       }
       confidence_level<-sapply(1:nrow(cordat), confidence)
       cordat<-cbind(cordat,confidence_level)
-      message("Confidence Level Added")
-      
+      message("Confidence Level Added (4 of 4)")
       
       write.csv(cordat, "corrected_postal_codes.csv")
 }

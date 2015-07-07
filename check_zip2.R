@@ -9,6 +9,8 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       #reg <- read.csv("postal_codes.csv", stringsAsFactors = FALSE, colClasses = "character")
       #dat <- read.csv("CSZ.csv", stringsAsFactors = FALSE)[,c("city", "state", "zip")]
       
+      message("Starting...")
+      
       dat$state<-toupper(dat$state)
       dzip <- dat$zip
       reg_zip <- reg$zip
@@ -26,7 +28,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       
       dzip_fix<-sapply(dzip, fix_zip, USE.NAMES = FALSE)
       datf<-replace(dat,3,dzip_fix)
-      message("Postal Codes Fixed (1 of 4)")
+      message("Postal Codes Fixed (1 of 5)")
       
       ziprow <- function(z){
             if(is.na(z)){
@@ -38,7 +40,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       
       zip_list <- lapply(dzip_fix,ziprow)
 
-      message("Zip Code Registry List Created (2 of 4)")
+      message("Zip Code Registry List Created (2 of 5)")
       
       check_zip <- function(n){
             if(all(datf[n,] == zip_list[[n]]) == TRUE){
@@ -50,7 +52,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       }
       
       cordat_mat<-sapply(1:nrow(dat), check_zip)
-      message("Ordered According to Zip Code (3 of 4)")
+      message("Ordered According to Zip Code (3 of 5)")
       cordat_list<-data.frame(t(as.data.frame(cordat_mat)))
       
       cordat<-data.frame(lapply(cordat_list,as.character), stringsAsFactors = FALSE)
@@ -66,11 +68,39 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       }
       confidence_level<-sapply(1:nrow(cordat), confidence)
       cordat<-cbind(cordat,confidence_level)
-      message("Confidence Level Added (4 of 4)")
+      message("Confidence Level Added (4 of 5)")
+      
+      
+      for(l in 1:nrow(cordat)){
+      #check_city <- function(l){
+            if(cordat$confidence_level[l] == 1){
+                  if(any((datf[l,1] == reg[,1]) & (datf[l,2] == reg[,2]))){
+                        cor_reg <- reg[which((datf$city[l] == reg$city) &
+                                          (datf$state[l] == reg$state)),]
+                        if(any(cordat$zip[l] != cor_reg$zip)){
+                              cordat$confidence_level[l] <- paste(cordat$confidence_level[l], 
+                                    "; City and State don't match zip, originally",
+                                    datf$city[l], "and", datf$state[l])
+                        }
+                  }
+            }
+      #}
+      }
+      
+      message("Marked Incorrect Cities and States(5 of 5)")
       
       write.csv(cordat, "corrected_postal_codes.csv")
 }
 
+
+#source("check_zip2.R")
+#fineName <- "Rprof_test.txt"
+#Rprof(fineName)
+#cpc <- check_postal_codes("CSZ.csv")
+#Rprof(NULL)
+#summaryRprof(fineName)
+
+#NOTE: run this ^^^^^^^ to check the time that parts of this function are taking
 
 #There are 35 cases where the zip code typed isn't a real zip code, and is
 #intended to be in the United States

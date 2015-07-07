@@ -9,7 +9,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       #reg <- read.csv("postal_codes.csv", stringsAsFactors = FALSE, colClasses = "character")
       #dat <- read.csv("CSZ.csv", stringsAsFactors = FALSE)[,c("city", "state", "zip")]
       
-      message("Starting...")
+      message("Starting...(0 of 5)")
       
       dat$state<-toupper(dat$state)
       dzip <- dat$zip
@@ -71,8 +71,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       message("Confidence Level Added (4 of 5)")
       
       
-      for(l in 1:nrow(cordat)){
-      #check_city <- function(l){
+      for(l in 1:nrow(dat)){
             if(cordat$confidence_level[l] == 1){
                   if(any((datf[l,1] == reg[,1]) & (datf[l,2] == reg[,2]))){
                         cor_reg <- reg[which((datf$city[l] == reg$city) &
@@ -83,8 +82,15 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
                                     datf$city[l], "and", datf$state[l])
                         }
                   }
+            }else if(((is.na(datf$zip[l])) & (datf$city[l] != ""))){
+                  if(!any((datf$city[l] == reg$city) & (datf$state[l] == reg$state))){
+                        cordat$confidence_level[l] <- paste(cordat$confidence_level[l], 
+                              "; City and State combination not in registry, either in other country or typo present; originally",
+                              dat$city[l], ",", dat$state[l], ",", dat$zip[l])
+                  }
+            }else if(datf$city[l] == ""){
+                  cordat$confidence_level[l] <- paste(cordat$confidence_level[l], "; No Data Present")
             }
-      #}
       }
       
       message("Marked Incorrect Cities and States(5 of 5)")

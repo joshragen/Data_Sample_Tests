@@ -5,14 +5,18 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       
       dat <- read.csv(file, stringsAsFactors = FALSE)[,c("city", "state", "zip")]
       reg <- read.csv(registry, stringsAsFactors = FALSE, colClasses = "character")
+      #reg <- read.csv("postal_codes.csv", stringsAsFactors = FALSE, colClasses = "character")
+      #dat <- read.csv("CSZ.csv", stringsAsFactors = FALSE)[,c("city", "state", "zip")]
       
       message("Starting... (0 of 5)")
       
-      dat$state<-toupper(dat$state)
-      dat$city<-toupper(dat$city)
-      reg$city<-toupper(reg$city)
-      dzip <- dat$zip
-      reg_zip <- reg$zip
+      datc<-dat
+      datc$state<-toupper(dat$state)
+      datc$city<-toupper(dat$city)
+      regc<-reg
+      regc$city<-toupper(reg$city)
+      dzip <- datc$zip
+      reg_zip <- regc$zip
       
       fix_zip <- function(r){
             if(nchar(r) == 10){
@@ -25,7 +29,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       }
       
       dzip_fix<-sapply(dzip, fix_zip, USE.NAMES = FALSE)
-      datf<-replace(dat,3,dzip_fix)
+      datf<-replace(datc,3,dzip_fix)
       message("Postal Codes Fixed (1 of 5)")
       
       ziprow <- function(z){
@@ -58,7 +62,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       conf <- c()
 
       confidence <- function(p){
-            lvl <- length(which(cordat[p,] == datf[p,]))
+            lvl <- length(which(toupper(cordat[p,]) == datf[p,]))
             conf <- c(conf, lvl)
       }
       confidence_level<-sapply(1:nrow(cordat), confidence)
@@ -70,16 +74,16 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       
       for(l in 1:nrow(dat)){
             if(cordat$confidence_level[l] == 1){
-                  if(any((datf$city[l] == reg$city) & (datf$state[l] == reg$state))){
-                        cor_reg <- reg[which((datf$city[l] == reg$city) &
-                                          (datf$state[l] == reg$state)),]
+                  if(any((datf$city[l] == regc$city) & (datf$state[l] == regc$state))){
+                        cor_reg <- reg[which((datf$city[l] == regc$city) &
+                                          (datf$state[l] == regc$state)),]
                         if(any(cordat$zip[l] != cor_reg$zip)){
                               cordat$confidence_level[l] <- paste(cordat$confidence_level[l], 
                                     "; City and State don't match zip")
                         }
                   }
             }else if(((is.na(datf$zip[l])) & (datf$city[l] != "") & (datf$state[l] != ""))){
-                  if(!any((datf$city[l] == reg$city) & (datf$state[l] == reg$state))){
+                  if(!any((datf$city[l] == regc$city) & (datf$state[l] == regc$state))){
                         cordat$confidence_level[l] <- paste(cordat$confidence_level[l], 
                               "; City and State combination not in registry, either in other country or typo present")
                   }
@@ -87,7 +91,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
                   cordat$confidence_level[l] <- paste(cordat$confidence_level[l], "; No Data Present")
             }
             if(cordat$confidence_level[l] == 0){
-                  if(any((datf$city[l] == reg$city) | (datf$state[l] == reg$state)) & (!any(dzip[l] == reg_zip))){
+                  if(any((datf$city[l] == regc$city) | (datf$state[l] == regc$state)) & (!any(dzip[l] == reg_zip))){
                         cordat$confidence_level[l] <- paste(cordat$confidence_level[l], "; Zip Code Doesn't Match Registry")
                   }
             }

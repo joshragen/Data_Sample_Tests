@@ -70,7 +70,7 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
       
       for(l in 1:nrow(dat)){
             if(cordat$confidence_level[l] == 1){
-                  if(any((datf[l,1] == reg[,1]) & (datf[l,2] == reg[,2]))){
+                  if(any((datf$city[l] == reg$city) & (datf$state[l] == reg$state))){
                         cor_reg <- reg[which((datf$city[l] == reg$city) &
                                           (datf$state[l] == reg$state)),]
                         if(any(cordat$zip[l] != cor_reg$zip)){
@@ -85,6 +85,11 @@ check_postal_codes <- function(file, registry = "postal_codes.csv"){
                   }
             }else if((datf$city[l] == "") & (datf$state[l] == "")){
                   cordat$confidence_level[l] <- paste(cordat$confidence_level[l], "; No Data Present")
+            }
+            if(cordat$confidence_level[l] == 0){
+                  if(any((datf$city[l] == reg$city) | (datf$state[l] == reg$state)) & (!any(dzip[l] == reg_zip))){
+                        cordat$confidence_level[l] <- paste(cordat$confidence_level[l], "; Zip Code Doesn't Match Registry")
+                  }
             }
       }
       

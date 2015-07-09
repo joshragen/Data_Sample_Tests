@@ -1,3 +1,14 @@
+#"file" is .csv data file to go through and clean
+#"registry" is the registry to look for the correct results in (default is registry consisting of all zip codes)
+#"file_name" is what the .csv file that the data will be printed into is called
+#"num_check" is the rows that should checked in 'file' (set to all rows by default)
+#"city_check" is for when the city is spelled wrong, it checks for a string of this length among other city names
+#with a matching zip code, and then replaces it with the first match. Set to 5 by default as anything lower
+#would return too many false results into the city name.
+
+#The confidence level is measure of how different the new data is from the original, by measuring how of the 3 columns
+#are different. A score of 3 should indicate that there were no changes, and the data was inputted correctly.
+#Changes to correct the zip code from 9-digit codes aren't counted in it.
 
 #source("check_zip_full.R")
 #check_postal_codes("CSZ.csv")
@@ -55,8 +66,8 @@ check_postal_codes <- function(file, registry = "full_postal_codes.csv", file_na
                         }
                   }
                   if(test == FALSE){
-                              checking <- dcity[g]
-                        }
+                        checking <- dcity[g]
+                  }
                   checking
             }else{
                   dcity[g]
@@ -75,7 +86,6 @@ check_postal_codes <- function(file, registry = "full_postal_codes.csv", file_na
             reg_rowC$city <- toupper(reg_rowC$city)
             reg_rowC$state <- toupper(reg_rowC$state)
             
-            #reg_rowc <- data.frame(toupper(reg_row$city), toupper(reg_row$state), reg_row$zip)
             if(nrow(reg_row) > 1){
                   if(any(datfc$city[n] == reg_rowC$city)){
                         reg_row <- reg_row[which(datfc$city[n] == reg_rowC$city),]
@@ -102,9 +112,6 @@ check_postal_codes <- function(file, registry = "full_postal_codes.csv", file_na
       confidence_level<-sapply(num_check, confidence)
       cordat<-cbind(cordat,confidence_level)
       message("Confidence Level Added (4 of 5)")
-      #Confidence level is measure of how different the new data is from the original,
-      #if it's 0 or 1, then it's worth looking at whats going on
-      
       
       for(l in 1:nrow(dat)){
             if(cordat$confidence_level[l] == 1){
@@ -136,5 +143,5 @@ check_postal_codes <- function(file, registry = "full_postal_codes.csv", file_na
       final_table <- cbind(Original_Values = "", dat, Corrected_Values ="",cordat)
       
       write.csv(final_table, file_name)
-      message("Done")
+      message(paste("Done: printed data to", file_name))
 }

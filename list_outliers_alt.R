@@ -1,8 +1,15 @@
 #'file' is name of csv file to use
-#'z' is the number of sd's from the mean to test (default = 3)
 #'test' is the column of the tests which the outliers are drawn from
+#'reg' is the registry of results to return data from if sort = T
+#'quan' is the quantile of age groups to return if split_age = T
 #'file_name' is the name of the file which the final outliers are printed to
-#'
+#'z' is the number of sd's from the mean to test (default = 3)
+#'rm' is whether or not to remove outliers more than 2 times z standard deviations away,
+#under the assumption that outliers this far removed are typos that are interfering with
+#detecting real outliers in a reasonable range
+#'sort' is whether or not to sort the results by registry, in which case 'reg' needs
+#to have a valid registry from the data typed into it
+#'split_age' is whether or not to divide the results by quantile of age groups
 
 #     These are the different possible levels for registry
 #     "Allergy", "Control", "Diabetes", "IBD", "IDRegistry", "Neurology",
@@ -17,7 +24,7 @@ list_outliers_alt <- function(file, test = 4:l, reg = "", quan = "",
       dat <- read.csv(file, stringsAsFactors = FALSE)
       l <- ncol(dat)
       #dat<-read.csv("cbc_results.csv", stringsAsFactors = FALSE)
-      z<-3
+      #z<-3
       outliers <- matrix(ncol = 2)
       #colnames(outliers) <- c("EVENT", "POINTS")
       
@@ -42,7 +49,6 @@ list_outliers_alt <- function(file, test = 4:l, reg = "", quan = "",
                   stop("Registry not Present in Data")
             }
       }
-      
       for(i in test) {
             outlier_col<-NULL
             colmean <- c("None", "None")
@@ -53,7 +59,7 @@ list_outliers_alt <- function(file, test = 4:l, reg = "", quan = "",
                   outlier_col <- c("No Data Present", "")
             }else{
                   if(rm){
-
+                        file_name<-"outliers_rm.csv"
                         out <- abs((dat[i])-mean(dat[[i]], na.rm = TRUE)) >
                               (z * 2)*sd(dat[[i]], na.rm = TRUE)
                         if(T %in% out){
@@ -100,15 +106,11 @@ list_outliers_alt <- function(file, test = 4:l, reg = "", quan = "",
                         r
                   }
             }
-            
             dat_list <- lapply(list_data_frames, fix_rows)
-            
             outliers<-data.frame(do.call(cbind,dat_list))
-            
       }
       outliers <- outliers[-c(1,2)]
       if(length(test) < 2){print(outliers)}
       write.csv(outliers, file_name)
       message(paste("Outliers printed to", file_name))
-      
 }

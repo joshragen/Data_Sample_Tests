@@ -95,6 +95,22 @@ check_dates <- function(pat){
       #}
 }
 
+dense<-function(g){
+      if(class(g) == "character"){
+            next
+      }
+      jpeg(paste0("density_abs_",i, names(int.key)[i], ".jpg"), 1000,600)
+      d<-density(g, na.rm = T)
+      plot(d)
+      polygon(d, col="red")
+      dev.off()
+      #code to make Kernal density plot data instead of histogram
+}
+int.key <- split(dat_key$percent_lymphocytes, dat_key$percent_lymphocytes$Test.Name)
+for(i in 1:length(int.key)){
+      dense(as.numeric(int.key[[i]]$Result))
+}
+
 dat_rnof <- rbindlist(dat_rno)
 write.csv(dat_rnof, "cerner_tests_dates_2_weeks.csv")
 
@@ -105,6 +121,44 @@ unique(null_dat$Test.Name)
 null_test <- split(null_dat, null_dat$Test.Name)
 null_names <- sapply(null_test, function(x) dim(x))[1,]
 #sapply(dat_rno, function(x) dim(x))[1,]
+
+dat_key <- (split(dat, dat$Internal.Key)) 
+hema <- dat_key$hematocrit
+hema_rno <- (split(hema, hema$RNO))
+hemaf <- hema_rno
+for(h in 1:length(hemaf)){
+      if(nrow(hemaf[[h]]) < 10){
+            hemaf[[h]] <- NA
+      }
+}
+
+library(data.table)
+hemaf <- hemaf[-which(is.na(hemaf))]
+#sapply(hemaf, function(x) dim(x))[1,]
+hemad <- rbindlist(hemaf)
+hemad<-hemad[-which(nchar(hemad$Result) >= 3),]
+hemad$Result <- as.numeric(hemad$Result)
+hemad.aov <- aov(Result ~ RNO, data = hemad)
+
+print(model.tables(hemad.aov,"means"),digits=5)
+hmeans <- as.numeric(model.tables(hemad.aov,"means")[[1]][[2]])
+#taking the density of this showed it was normal enough
+
+
+library(lubridate)
+dathy <- split(hema, year(hema$Date))
+for(i in 1:length(dathy)){
+      dathy[[i]][[8]] <- as.numeric(dathy[[i]][[8]])
+      if(any(is.na(dathy[[i]][[8]]))){
+            dathy[[i]] <- dathy[[i]][-which(is.na(dathy[[i]][[8]])),]
+      }else{next}
+}
+for(i in 1:length(dathy)){
+      dense(dathy[[i]][[8]])
+}
+#Note, I have modified how this function prints in the console when I ran it.
+
+#sapply(daty, function(x) dim(x))[1,]
 
 dim_list <- c()
       for(d in 1:length(dat_rno)){

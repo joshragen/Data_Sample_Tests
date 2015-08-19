@@ -6,41 +6,42 @@
 #source("list_outliers2.R")
 #list_outliers("cbc_results.csv")
 
-list_outliers <- function(file, z = 3, test = 4:ncol(dat), file_name = "outliers.csv"){
+list_outliers <- function(file, test = 4:ncol(dat), file_name = "outliers.csv", z = 3){
       
-      dat <- read.csv(file)
-      #dat<-read.csv("cbc_results.csv")
+      dat <- read.csv(file, stringsAsFactors = FALSE)
+      #dat<-read.csv("cbc_results.csv", stringsAsFactors = FALSE)
       #z<-3
       
       outliers <- matrix(ncol = 2)
-      colnames(outliers) <- c("ROWS", "POINTS")
+      #colnames(outliers) <- c("EVENT", "POINTS")
       
       for(i in test) {
             outlier_col<-NULL
-            if(is.factor(dat[[i]])){
+            if(is.character(dat[[i]])){
                   outlier_col <- c("Non-Numerical Data", "")
-                  namerow <- c("Name of Data", colnames(dat[i]))
+                  #namerow <- c("Name of Data", colnames(dat[i]))
                   colmean <- c("None", "None")
                   colint <- c("None", "None")
-            }else if(is.nan(mean(dat[[i]], na.rm = TRUE) == TRUE)){
+            }else if(is.na(mean(dat[[i]], na.rm = TRUE))){
                   outlier_col <- c("No Data Present", "")
-                  namerow <- c("Name of Data", colnames(dat[i]))
+                  #namerow <- c("Name of Data", colnames(dat[i]))
                   colmean <- c("None", "None")
                   colint <- c("None", "None")
             }else {
                   out <- abs((dat[i])-mean(dat[[i]], na.rm = TRUE)) >
                   z*sd(dat[[i]], na.rm = TRUE)
                   
-                  outlier_col <- data.frame(ROWS = which(out == TRUE),
-                  POINTS = dat[[i]][which(out == TRUE)])
-                  namerow <- c("Name of Test", colnames(dat[i]))
+                  outlier_col <- data.frame(dat$event[which(out == TRUE)],
+                  dat[[i]][which(out == TRUE)],stringsAsFactors=FALSE)
+                  #namerow <- c("Name of Test", colnames(dat[i]))
                   colmean <- c("Mean of Column", mean(dat[[i]], na.rm = TRUE))
                   colint <- c("Confidence Interval", 
                         paste(c(mean(dat[[i]], na.rm = TRUE) + z*sd(dat[[i]], na.rm = TRUE)),
                         c(mean(dat[[i]], na.rm = TRUE) - z*sd(dat[[i]], na.rm = TRUE)), sep = ", "))
             }
             
-            outlier_tab <- rbind(namerow, colmean, colint, outlier_col)
+            outlier_tab <- rbind(colmean, colint, outlier_col)
+            colnames(outlier_tab) <-c("event_name", colnames(dat[i]))
             list_data_frames <- list(outliers, outlier_tab)
             max_row <- max(unlist(lapply(list_data_frames, nrow), use.names = F))
             
@@ -61,7 +62,7 @@ list_outliers <- function(file, z = 3, test = 4:ncol(dat), file_name = "outliers
       }
       
       outliers <- outliers[-c(1,2)]
-      
+      if(length(test) < 2){print(outliers)}
       write.csv(outliers, file_name)
       message(paste("Outliers printed to", file_name))
 }

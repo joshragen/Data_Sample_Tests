@@ -26,7 +26,6 @@ check_source <- function(source, file = "cbc_results_source.csv", rm = T, corr =
                         }
                   }
             }
-            
             #q <- 1
             #datfx <- datf
             #while(q <= nrow(datfx)){
@@ -37,7 +36,6 @@ check_source <- function(source, file = "cbc_results_source.csv", rm = T, corr =
             #      print(q)
             #}
             #This code could be a better solution, make work if you have the time
-            
       }else if(source == 3){
             datf <- datf[-which(apply(datf,1, function(x) any(grepl("VMMC", x)))),]
       }

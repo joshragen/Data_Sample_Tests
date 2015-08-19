@@ -140,16 +140,19 @@ datvf <- datv[which(!(colnames(datv) %in% charnam))]
 #datvf is all value columns that are not entirely character vectors
 datnum <- c()
 datchar <- c()
+datper <- c()
+datcharlength <- c()
+datlength <- c()
 for(t in 1:ncol(datvf)){
       testcol <- datvf[[t]]
       unval <- unique(testcol)
       unval <- unval[-which(is.na(unval))]
       
       if(!any(is.na(as.numeric(unval)))){
-            #datnum <- c(datnum, names(datvf[t]))
+            datnum <- c(datnum, names(datvf[t]))
             next
       }else{
-            #datchar <- c(datchar, names(datvf[t]))
+            datchar <- c(datchar, names(datvf[t]))
       }
       charval <- unval[which(is.na(as.numeric(unval)))]
       
@@ -158,14 +161,20 @@ for(t in 1:ncol(datvf)){
       
       testcolf <- testcol[-which(is.na(testcol))]
       tlength <- length(which(!(testcolf %in% charval)))
-      per <- paste0(round(tlength/length(testcolf), digits = 3), "%")
+      #tlength is how many are numeric and not characters
+      per <- paste0(round(tlength/length(testcolf), digits = 3), "% are numeric")
+      datper <- c(datper, paste0(round((length(testchar)/length(testcolf)) * 100, digits = 8), "%"))
+      datcharlength <- c(datcharlength, length(testchar))
+      datlength <- c(datlength, length(testcolf))
       
-      jpeg(paste0(t, "_mixed_barplot_", names(datvf)[t], ".jpg"), 1200,800)
-      par(mar = c(13,4,1,1))
-      bplt <- barplot(bplott, col = c(2:30), legend = c(paste(rownames(bplott), "n =", bplott), paste("# of nums =", tlength), per), las = 2)
-      #text(x= bplt, y= bplott + (bplott/8), labels=as.character(bplott), xpd = T)
-      dev.off()
+      #jpeg(paste0(t, "_mixed_barplot_", names(datvf)[t], ".jpg"), 1200,800)
+      #par(mar = c(13,4,1,1))
+      #bplt <- barplot(bplott, col = c(2:30), legend = c(paste(rownames(bplott), "n =", bplott), paste("# of nums =", tlength), per), las = 2)
+      ##text(x= bplt, y= bplott + (bplott/8), labels=as.character(bplott), xpd = T)
+      #dev.off()
 }
+mix_dat <- cbind(datchar, datcharlength, datlength, datper)
+#write.csv(mix_dat, "Mixed_Test_Columns.csv")
 
 for(b in 1:ncol(datvc)){
       if(length(unique(datvc[[b]])) < 3){

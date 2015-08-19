@@ -4,6 +4,8 @@
 list_outliers <- function(file, z = 3){
       
       dat <- read.csv(file)
+      #dat<-read.csv("cbc_results.csv")
+      
       
       outliers <- data.frame(ROWS = c(0), POINTS = c(0))
       #sets the outliers data frame with column names before the loop

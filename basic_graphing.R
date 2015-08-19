@@ -4,7 +4,6 @@
 
 #Some basic plotting functions for histrograms and density curves
 histo<-function(g){
-      
       ts<-g
       hts<-hist(ts,breaks = 10)
       xfit<-seq(min(ts, na.rm = T), max(ts, na.rm = T), length = 40)
@@ -22,6 +21,7 @@ dense<-function(g){
       d<-density(g, na.rm = T)
       plot(d)
       polygon(d, col="red")
+      dev.off()
       #code to make Kernal density plot data instead of histogram
 }
 
@@ -128,58 +128,81 @@ plot_cor <- function(rown,col){
 #I don't remember what this code was for ^^^^^^^.
 
 setwd("C:/Users/jragen/Desktop/Sample_Tests")
- dat<-read.csv("cbc_results_units.csv", stringsAsFactors = FALSE)
- z = 3
- for(i in 1:53){
-       if(class(dat[[i]]) == "character"){
-             next
-       }else if(all(is.na(dat[[i]]))){
-             next
-       }
-                 out <- abs((dat[i])-mean(dat[[i]], na.rm = TRUE)) >
-                     (z * 3)*sd(dat[[i]], na.rm = TRUE)
-                 if(T %in% out){
-                           dat<-dat[(-which(out == T)),]
-                           rownames(out)<-NULL
-                       }
- }
- 
- test <- 23
- 
- datf <- dat[-which(is.na(dat[[test]])),]
- bound <- 3
+dat<-read.csv("cbc_results_units.csv", stringsAsFactors = FALSE)
+z = 3
+for(i in 1:53){
+      if(class(dat[[i]]) == "character"){
+            next
+      }else if(all(is.na(dat[[i]]))){
+            next
+      }
+            out <- abs((dat[i])-mean(dat[[i]], na.rm = TRUE)) >
+                  (z * 3)*sd(dat[[i]], na.rm = TRUE)
+            if(T %in% out){
+                  dat<-dat[(-which(out == T)),]
+                  rownames(out)<-NULL
+                  }
+}
 
- high_dat <- split(datf, (datf[[test]] < bound))[[1]]
- low_dat <- split(datf, (datf[[test]] < bound))[[2]]
- 
- 
- for(i in c(4:12,18:28)){
-            jpeg(paste0("boxplot_", i,"_",names(dat[i]), "_rm.jpg"), 1000,600)
-            datl<-(split(dat[[i]], dat$registry))
-            boxplot(datl[c(1:6,9)])
-       }
+test <- 23
 
- #to not show outliers in boxplots, use range and outline = F to change it
- #This whole section above this could be copy and pasted to get boxplots of data.
- 
- dage <- dat$ageAtDraw
- datq<-split(dat, cut(dage, quantile(dage, na.rm = T),include.lowest = T))
+datf <- dat[-which(is.na(dat[[test]])),]
+bound <- 3
+
+high_dat <- split(datf, (datf[[test]] < bound))[[1]]
+low_dat <- split(datf, (datf[[test]] < bound))[[2]]
+for(i in c(4:12,18:28)){
+      jpeg(paste0("boxplot_", i,"_",names(dat[i]), "_rm.jpg"), 1000,600)
+      datl<-(split(dat[[i]], dat$registry))
+      boxplot(datl[c(1:6,9)])
+}
+
+#to not show outliers in boxplots, use range and outline = F to change it
+#This whole section above this could be copy and pasted to get boxplots of data.
+
+dage <- dat$ageAtDraw
+datq<-split(dat, cut(dage, quantile(dage, na.rm = T),include.lowest = T))
 
 
- 
- datq<-split(dat$testresults_absolute_monocytes, cut(dat$testresults_absolute_monocytes,
-            quantile(dat$testresults_absolute_monocytes, probs = seq(0,1,0.16666666), na.rm = T),include.lowest = T))
- #prcomp(~ ., data = dat[c(4:12,18:28)], na.action = na.omit, scale = T)
- #this does PCA on data
- 
- 
- for (i in c(46:51, 55:63)){
-       alt<-as.name(paste0(names(dat)[[i]], ".1"))
-       colm <- which(names(dat) == alt)
-       if(all(dat[[i]] == dat[[colm]], na.rm = T)){
-             print("TRUE")
-       }
- }
- #this was to check if the columns were identical to their counterparts with a .1 on them
- #they were, so I removed them to make space
- 
+
+datq<-split(dat$testresults_absolute_monocytes, cut(dat$testresults_absolute_monocytes,
+      quantile(dat$testresults_absolute_monocytes, probs = seq(0,1,0.16666666), na.rm = T),include.lowest = T))
+#prcomp(~ ., data = dat[c(4:12,18:28)], na.action = na.omit, scale = T)
+#this does PCA on data (not really, i didn't really get it to work)
+
+
+for (i in c(46:51, 55:63)){
+      alt<-as.name(paste0(names(dat)[[i]], ".1"))
+      colm <- which(names(dat) == alt)
+      if(all(dat[[i]] == dat[[colm]], na.rm = T)){
+            print("TRUE")
+      }
+}
+#this was to check if the columns were identical to their counterparts with a .1 on them
+#they were, so I removed them to make space
+
+#code to take random samples which was later rbind'ed together to make a sample
+
+
+zip <- zip[-which(is.na(zip))]
+locs <- data.frame()
+for(z in 1:length(zip)){
+      if(any(zip[z] == zipcode$zip)){
+            row <- which(zip[z] == zipcode$zip)
+            coord <- c(zipcode$latitude[row], zipcode$longitude[row])
+      }else{
+            next
+      }
+      locs <- rbind(locs, coord)
+}
+names(locs) <- c("latitude", "longitude")
+locs$latitude <- jitter(locs$latitude, amount = 0.3)
+locs$longitude <- jitter(locs$longitude, amount = 0.3)
+
+map <- get_googlemap('usa', markers = locss[1:50,], zoom = 3, scale = 1)
+#only gets first 50 points, looks bad
+
+map <- get_map('usa', zoom = 3, scale = 10)
+p <- ggmap(map) + geom_point(data = locs, aes(longitude, latitude), col = 'red')
+
+#this makes a map of the us with all of the general areas of the zip codes plotted onto it

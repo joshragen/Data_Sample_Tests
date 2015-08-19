@@ -13,8 +13,10 @@
 
 #     These are the different possible levels for registry
 #     "Allergy", "Control", "Diabetes", "IBD", "IDRegistry", "Neurology",
-#     "OutsideSamples", "PulmonaryDiseaseRegistry", "RDRegistry", "Transplant" 
+#     "OutsideSamples", "PulmonaryDiseaseRegistry", "RDRegistry", "Transplant"
 
+
+#setwd("C:/Users/jragen/Desktop/Sample_Tests")
 #source("list_outliers_alt.R")
 #list_outliers_alt("cbc_results.csv")
 
@@ -53,8 +55,10 @@ list_outliers_alt <- function(file, test = 4:l, reg = "", quan = "",
             outlier_col<-NULL
             colmean <- c("None", "None")
             colint <- c("None", "None")
+            skip <- F
             if(is.character(dat[[i]])){
                   outlier_col <- c("Non-Numerical Data", "")
+                  skip <- T
             }else if(is.na(mean(dat[[i]], na.rm = TRUE))){
                   outlier_col <- c("No Data Present", "")
             }else{
@@ -90,7 +94,7 @@ list_outliers_alt <- function(file, test = 4:l, reg = "", quan = "",
                               c(mean(dat[[i]], na.rm = TRUE) - z*sd(dat[[i]], na.rm = TRUE))))
                   }
             }
-            
+            if(skip){next}
             outlier_tab <- rbind(colmean, colint, outlier_col)
             colnames(outlier_tab) <-c("event_name", colnames(dat[i]))
             list_data_frames <- list(outliers, outlier_tab)
